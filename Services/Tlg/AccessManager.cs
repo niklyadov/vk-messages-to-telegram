@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Options;
 using VkToTg.Models;
 
-namespace VkToTg.Services
+namespace VkToTg.Services.Telegram
 {
-    public class TlgAccessManager
+    public class AccessManager
     {
         public TelegramBotConfiguration _configuration;
-        public TlgAccessManager(IOptions<Configuration> configurationOptions)
+        public AccessManager(IOptions<Configuration> configurationOptions)
         {
             _configuration = configurationOptions.Value.TelegramBot;
         }

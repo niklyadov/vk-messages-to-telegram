@@ -1,15 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using VkToTg.Attributes;
+using VkToTg.Commands.Core;
 
 namespace VkToTg.Commands
 {
+    [Command("chatid")]
     public class ChatidCommand : BaseCommand
     {
         public ChatidCommand(IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)

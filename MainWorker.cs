@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
 using VkToTg.Models;
-using VkToTg.Services;
 
 namespace VkToTg
 {
@@ -47,8 +46,8 @@ namespace VkToTg
             }
 
             _bot.StartReceiving(
-                scope.ServiceProvider.GetRequiredService<TlgUpdatesReceiver>().Handle,
-                scope.ServiceProvider.GetRequiredService<TlgErrorsReceiver>().Handle,
+                scope.ServiceProvider.GetRequiredService<Services.Telegram.UpdatesReceiver>().Handle,
+                scope.ServiceProvider.GetRequiredService<Services.Telegram.ErrorsReceiver>().Handle,
                 new ReceiverOptions { AllowedUpdates = { } }, // receive all update types
                 stoppingToken
             );

@@ -1,16 +1,17 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
 using VkNet.Model;
 using VkToTg.Models;
 
-namespace VkToTg.Services
+namespace VkToTg.Services.Vk
 {
-    public class VkMessagesReceiver : VkApiService
+    public class MessagesReceiver : ApiService
     {
         public long? SelectedConversationId { get; set; }
-        public VkMessagesReceiver(IOptions<Configuration> configurationOptions)
-            : base(configurationOptions)
+        public MessagesReceiver(IOptions<Configuration> configurationOptions, ILoggerFactory loggerFactory)
+            : base(configurationOptions, loggerFactory)
         {
         }
 

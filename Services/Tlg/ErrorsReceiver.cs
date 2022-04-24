@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Newtonsoft.Json;
 
-namespace VkToTg.Services
+namespace VkToTg.Services.Telegram
 {
-    public class TlgErrorsReceiver
+    public class ErrorsReceiver
     {
-        private ILogger<TlgErrorsReceiver> _logger;
-        public TlgErrorsReceiver(ILogger<TlgErrorsReceiver> logger)
+        private ILogger<ErrorsReceiver> _logger;
+        public ErrorsReceiver(ILogger<ErrorsReceiver> logger)
         {
             _logger = logger;
         }

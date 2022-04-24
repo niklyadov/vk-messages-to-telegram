@@ -18,11 +18,11 @@ namespace VkToTg
                     IConfiguration configuration = hostContext.Configuration;
 
                     services.Configure<Models.Configuration>(configuration.GetSection("AppConfiguration"));
-                    services.AddSingleton<Services.TlgAccessManager>();
-                    services.AddSingleton<Services.VkConversationReceiver>();
-                    services.AddSingleton<Services.VkMessagesReceiver>();
-                    services.AddSingleton<Services.TlgUpdatesReceiver>();
-                    services.AddSingleton<Services.TlgErrorsReceiver>();
+                    services.AddSingleton<Services.Telegram.AccessManager>();
+                    services.AddSingleton<Services.Telegram.UpdatesReceiver>();
+                    services.AddSingleton<Services.Telegram.ErrorsReceiver>();
+                    services.AddSingleton<Services.Vk.ConversationReceiver>();
+                    services.AddSingleton<Services.Vk.MessagesReceiver>();
                     services.AddHostedService<MainWorker>();
                 });
     }

@@ -1,19 +1,21 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using VkNet;
 using VkNet.Model;
 using VkToTg.Models;
 
-namespace VkToTg.Services
+namespace VkToTg.Services.Vk
 {
-    public class VkApiService
+    public class ApiService
     {
         public VkApi VkApi { get; set; }
         private VkAccountConfiguration _configuration;
-        public VkApiService(IOptions<Configuration> configurationOptions)
+        public ApiService(IOptions<Configuration> configurationOptions, ILoggerFactory loggerFactory)
         {
             _configuration = configurationOptions.Value.VkAccount;
 
-            VkApi = new VkApi();
+            VkApi = new VkApi(loggerFactory.CreateLogger<VkApi>());
+
             VkApi.Authorize(new ApiAuthParams
             {
                 Login = _configuration.Login,
@@ -21,7 +23,7 @@ namespace VkToTg.Services
                 AccessToken = _configuration.AccessToken
             });
 
-            VkApi.RequestsPerSecond = 1;
+            VkApi.RequestsPerSecond = _configuration.RequestsPerSecond;
         }
     }
 }
