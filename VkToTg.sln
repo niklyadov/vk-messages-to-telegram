@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32126.317
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VkToTg", "VkToTg.csproj", "{9FF005FF-8666-4F53-AA38-5786385B9334}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9FF005FF-8666-4F53-AA38-5786385B9334}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FF005FF-8666-4F53-AA38-5786385B9334}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FF005FF-8666-4F53-AA38-5786385B9334}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FF005FF-8666-4F53-AA38-5786385B9334}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {93E847CD-0F00-4C7F-8DB6-D034089D8E90}
+	EndGlobalSection
+EndGlobal
