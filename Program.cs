@@ -19,6 +19,7 @@ namespace VkToTg
 
                     services.Configure<Models.Configuration>(configuration.GetSection("AppConfiguration"));
                     services.AddSingleton<Services.Telegram.AccessManager>();
+                    services.AddSingleton<Services.Telegram.CommandsManager>();
                     services.AddSingleton<Services.Telegram.UpdatesReceiver>();
                     services.AddSingleton<Services.Telegram.ErrorsReceiver>();
                     services.AddSingleton<Services.Vk.ConversationReceiver>();

@@ -8,7 +8,7 @@ using VkToTg.Commands.Core;
 
 namespace VkToTg.Commands
 {
-    [Command("")]
+    [Command()]
     public class DefaultCommand : BaseCommand
     {
         public DefaultCommand (IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)

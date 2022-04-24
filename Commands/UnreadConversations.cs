@@ -8,7 +8,7 @@ using VkToTg.Commands.Core;
 
 namespace VkToTg.Commands
 {
-    [Command("unreadconv")]
+    [Command("unreadconv", "View all conversations with unreaded messages.")]
     public class UnreadConversations : BaseCommand
     {
         public UnreadConversations(IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)

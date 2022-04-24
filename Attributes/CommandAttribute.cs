@@ -9,11 +9,13 @@ namespace VkToTg.Attributes
 
         }
 
-        public CommandAttribute(string v)
+        public CommandAttribute(string name, string description)
         {
-            V = v;
+            Name = name;
+            Description = description;
         }
 
-        public string V { get; }
+        public string Name { get; }
+        public string Description { get; }
     }
 }

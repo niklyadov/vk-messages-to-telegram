@@ -8,7 +8,7 @@ using VkToTg.Commands.Core;
 
 namespace VkToTg.Commands
 {
-    [Command("conv")]
+    [Command("conv", "View all conversations.")]
     public class ConversationsCommand : BaseCommand
     {
         public ConversationsCommand(IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)

@@ -3,10 +3,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
+using Telegram.Bot.Types;
 using VkToTg.Models;
 
 namespace VkToTg
@@ -51,6 +54,23 @@ namespace VkToTg
                 new ReceiverOptions { AllowedUpdates = { } }, // receive all update types
                 stoppingToken
             );
+
+            #region register commands list for telegram client
+
+            var commandsManager = scope.ServiceProvider.GetRequiredService<Services.Telegram.CommandsManager>();
+            var commandsAttribure = commandsManager.GetAllCommandsAttribute();
+
+            await _bot.SetMyCommandsAsync(commandsAttribure
+                .Where(a => !string.IsNullOrEmpty(a.Name) && !string.IsNullOrEmpty(a.Description))
+                .Select(a => new BotCommand()
+                {
+                    Command = a.Name,
+                    Description = a.Description
+                })
+            );
+
+
+            #endregion
 
             _logger.LogInformation($"Bot {_bot.GetMeAsync().Result.FirstName} started");
         }
