@@ -10,8 +10,9 @@
 
     public class TelegramBotConfiguration
     {
-        public string BotToken { get; set; } = "";
+        public string Token { get; set; } = "";
         public long AllowedChatId { get; set; } = 0;
+        public bool AllowSendMessages { get; set; } = true;
     }
 
     public class VkAccountConfiguration
@@ -20,6 +21,6 @@
         public string Password { get; set; } = "";
         public string AccessToken { get; set; } = "";
         public int RequestsPerSecond { get; set; } = 1;
-        public int NewMessagesMonitoringInterval { get; set; } = 6000;
+        public int NewMessagesMonitoringIntervalInMinutes { get; set; } = 6000;
     }
 }

@@ -5,7 +5,7 @@ namespace VkToTg.Services.Telegram
 {
     public class AccessManager
     {
-        public TelegramBotConfiguration _configuration;
+        private readonly TelegramBotConfiguration _configuration;
         public AccessManager(IOptions<Configuration> configurationOptions)
         {
             _configuration = configurationOptions.Value.TelegramBot;

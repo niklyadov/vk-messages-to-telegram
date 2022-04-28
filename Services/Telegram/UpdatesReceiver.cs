@@ -14,30 +14,39 @@ namespace VkToTg.Services.Telegram
 {
     public class UpdatesReceiver
     {
-        private IServiceScopeFactory _serviceScopeFactory;
-        private CommandsManager _commandsManager;
-        private ILogger<UpdatesReceiver> _logger;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<UpdatesReceiver> _logger;
         private readonly TelegramBotConfiguration _configurationBot;
+        private readonly CommandsManager _commandsManager;
 
-        public UpdatesReceiver (IServiceScopeFactory serviceScopeFactory, 
-            CommandsManager commandsManager, ILogger<UpdatesReceiver> logger, IOptions<Configuration> configurationOptions)
+        public UpdatesReceiver (ILogger<UpdatesReceiver> logger, IServiceProvider serviceProvider,
+            IOptions<Configuration> configurationOptions)
         {
-            _serviceScopeFactory = serviceScopeFactory;
-            _commandsManager = commandsManager;
             _logger = logger;
+            _serviceProvider = serviceProvider;
             _configurationBot = configurationOptions.Value.TelegramBot;
+            _commandsManager = serviceProvider.GetService<CommandsManager>();
         }
 
         public async Task Handle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            switch (update.Type)
+            try
             {
-                case UpdateType.Message: 
-                    await HandleMessage(botClient, update.Message, cancellationToken);
-                    break;
-                case UpdateType.CallbackQuery:
-                    await HandleCallbackQuery(botClient, update.CallbackQuery, cancellationToken);
-                    break;
+                switch (update.Type)
+                {
+                    case UpdateType.Message:
+                        await HandleMessage(botClient, update.Message, cancellationToken);
+                        break;
+                    case UpdateType.CallbackQuery:
+                        await HandleCallbackQuery(botClient, update.CallbackQuery, cancellationToken);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to execute command {ex.Message}");
+
+                await botClient.SendTextMessageAsync(_configurationBot.AllowedChatId, "Something went wrong. See console.");
             }
         }
 
@@ -49,27 +58,20 @@ namespace VkToTg.Services.Telegram
             {
                 var command = _commandsManager.GetCommandImplementation(commandName, botClient);
 
-                try
-                {
-                    await command.OnMessage(message, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Failed to execute command {ex.Message}");
-
-                    await botClient.SendTextMessageAsync(message.Chat, "Something went wrong. See console.");
-                }
+                await command.OnMessage(message, cancellationToken);
 
                 return;
             }
 
-            var scope = _serviceScopeFactory.CreateScope();
-            var messagesSender = scope.ServiceProvider.GetService<Vk.MessagesSender>();
-            var messagesReceiver = scope.ServiceProvider.GetService<Vk.MessagesReceiver>();
-
-            if (messagesReceiver.SelectedConversationId.HasValue)
+            if (_configurationBot.AllowSendMessages)
             {
-                messagesSender.SendMessage(message.Text, messagesReceiver.SelectedConversationId.Value);
+                var messagesSender = _serviceProvider.GetService<Vk.MessagesSender>();
+                var messagesReceiver = _serviceProvider.GetService<Vk.MessagesReceiver>();
+
+                if (messagesReceiver.SelectedConversationId.HasValue)
+                {
+                    messagesSender.SendMessage(message.Text, messagesReceiver.SelectedConversationId.Value);
+                }
             }
         }
 
@@ -81,17 +83,7 @@ namespace VkToTg.Services.Telegram
 
             var command = _commandsManager.GetCommandImplementation(commandName, botClient);
 
-            try
-            {
-                await command.OnCallbackQuery(callbackQuery, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-
-                _logger.LogError($"Failed to execute command {ex.Message}");
-
-                await botClient.SendTextMessageAsync(_configurationBot.AllowedChatId, "Something went wrong. See console.");
-            }
+            await command.OnCallbackQuery(callbackQuery, cancellationToken);
         }
     }
 }

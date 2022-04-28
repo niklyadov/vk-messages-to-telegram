@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -8,13 +9,13 @@ namespace VkToTg.Commands.Core
 {
     public abstract class BaseCommand
     {
-        protected IServiceScopeFactory ServiceScopeFactory { get; }
-        protected ITelegramBotClient BotClient { get; }
+        protected IServiceProvider ServiceProvider { get; }
+        protected ITelegramBotClient TelegramBotClient { get; }
 
-        public BaseCommand(IServiceScopeFactory serviceScopeFactory, ITelegramBotClient botClient)
+        public BaseCommand(IServiceProvider serviceProvider)
         {
-            ServiceScopeFactory = serviceScopeFactory;
-            BotClient = botClient;
+            ServiceProvider = serviceProvider;
+            TelegramBotClient = serviceProvider.GetRequiredService<ITelegramBotClient>();
         }
 
         public virtual Task OnMessage(Message message, CancellationToken cancellationToken)

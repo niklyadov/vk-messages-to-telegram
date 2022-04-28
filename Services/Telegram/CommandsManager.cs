@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +11,12 @@ namespace VkToTg.Services.Telegram
 {
     public class CommandsManager
     {
-        IServiceScopeFactory _serviceScopeFactory;
-        ILogger<CommandsManager> _logger;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<CommandsManager> _logger;
 
-        public CommandsManager(IServiceScopeFactory serviceScopeFactory, ILogger<CommandsManager> logger)
+        public CommandsManager(IServiceProvider serviceProvider, ILogger<CommandsManager> logger)
         {
-            _serviceScopeFactory = serviceScopeFactory;
+            _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
@@ -54,8 +53,8 @@ namespace VkToTg.Services.Telegram
         public BaseCommand GetCommandImplementation(string commandText, ITelegramBotClient botClient)
         {
             var commandType = FindCommandType(commandText);
-            var command = commandType != null ? Activator.CreateInstance(commandType, _serviceScopeFactory, botClient) as BaseCommand
-                : new DefaultCommand(_serviceScopeFactory, botClient);
+            var command = commandType != null ? Activator.CreateInstance(commandType, _serviceProvider) as BaseCommand
+                : new DefaultCommand(_serviceProvider);
 
             return command;
         }

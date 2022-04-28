@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -12,24 +13,22 @@ namespace VkToTg.Commands
     [Command("unreadconv", "View all conversations with unreaded messages.")]
     public class UnreadConversations : BaseCommand
     {
-        public UnreadConversations(IServiceScopeFactory serviceScopeFactory, ITelegramBotClient botClient) : base(serviceScopeFactory, botClient)
+        public UnreadConversations(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
         public override async Task OnMessage(Message message, CancellationToken cancellationToken)
         {
-            using var scope = ServiceScopeFactory.CreateScope();
-
-            var accessManager = scope.ServiceProvider.GetService<Services.Telegram.AccessManager>();
+            var accessManager = ServiceProvider.GetService<Services.Telegram.AccessManager>();
             if (!accessManager.HasAccess(message.Chat.Id)) return;
 
 
-            await BotClient.SendChatActionAsync(message.Chat, ChatAction.Typing, cancellationToken);
+            await TelegramBotClient.SendChatActionAsync(message.Chat, ChatAction.Typing, cancellationToken);
 
-            var vkConversations = scope.ServiceProvider.GetService<Services.Vk.ConversationReceiver>();
+            var vkConversations = ServiceProvider.GetService<Services.Vk.ConversationReceiver>();
             var msg = string.Join("\n", vkConversations.GetUnreadedConversations());
 
-            await BotClient.SendTextMessageAsync(message.Chat, msg);
+            await TelegramBotClient.SendTextMessageAsync(message.Chat, msg);
         }
     }
 }

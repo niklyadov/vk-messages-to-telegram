@@ -9,7 +9,7 @@ namespace VkToTg.Services.Telegram
 {
     public class ErrorsReceiver
     {
-        private ILogger<ErrorsReceiver> _logger;
+        private readonly ILogger<ErrorsReceiver> _logger;
         public ErrorsReceiver(ILogger<ErrorsReceiver> logger)
         {
             _logger = logger;

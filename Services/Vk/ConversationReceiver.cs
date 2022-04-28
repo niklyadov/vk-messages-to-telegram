@@ -19,6 +19,7 @@ namespace VkToTg.Services.Vk
         }
 
         Dictionary<long, string> CacheConversationsTitles = new Dictionary<long, string>();
+
         public ICollection<string> GetAllConversations(int page = 1)
         {
             var conversations = VkApi.Messages.GetConversations(new GetConversationsParams() 

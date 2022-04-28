@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -13,54 +14,52 @@ namespace VkToTg.Commands
     [Command("msg", "View all messages in selected conversation.")]
     public class MessagesCommand : BaseCommand
     {
-        public MessagesCommand(IServiceScopeFactory serviceScopeFactory, ITelegramBotClient botClient) : base(serviceScopeFactory, botClient)
+        public MessagesCommand(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
         public override async Task OnMessage(Message message, CancellationToken cancellationToken)
         {
-            using (var scope = ServiceScopeFactory.CreateScope())
+            var accessMngr = ServiceProvider.GetService<Services.Telegram.AccessManager>();
+            if (!accessMngr.HasAccess(message.Chat.Id)) return;
+
+            var vkMessages = ServiceProvider.GetService<Services.Vk.MessagesReceiver>();
+
+            if (vkMessages.SelectedConversationId.HasValue)
             {
-                var accessMngr = scope.ServiceProvider.GetService<Services.Telegram.AccessManager>();
-                if (!accessMngr.HasAccess(message.Chat.Id)) return;
-
-                var vkMessages = scope.ServiceProvider.GetService<Services.Vk.MessagesReceiver>();
-
-                if (vkMessages.SelectedConversationId.HasValue)
+                await foreach (var vkMsg in vkMessages.GetMessagesAsync(vkMessages.SelectedConversationId.Value))
                 {
-                    await foreach (var vkMsg in vkMessages.GetMessagesAsync(vkMessages.SelectedConversationId.Value))
+                    if (vkMsg.PhotoLink != null)
                     {
-                        if(vkMsg.PhotoLink != null)
-                        {
-                            await BotClient.SendChatActionAsync(message.Chat, ChatAction.UploadPhoto, cancellationToken);
-                            await BotClient.SendPhotoAsync(message.Chat, new InputOnlineFile(vkMsg.PhotoLink), vkMsg.Text);
-                        }
-                        else if (vkMsg.AudioMessageLink != null)
-                        {
-                            await BotClient.SendChatActionAsync(message.Chat, ChatAction.RecordVoice, cancellationToken);
-                            await BotClient.SendAudioAsync(message.Chat, new InputOnlineFile(vkMsg.AudioMessageLink), vkMsg.Text);
-                        }
-                        //else if (vkMsg.VideoLink != null)
-                        //{
-                        //    await BotClient.SendChatActionAsync(message.Chat, ChatAction.RecordVideo, cancellationToken);
-                        //    await BotClient.SendVideoAsync(message.Chat, new InputOnlineFile(vkMsg.VideoLink), null, null, null, vkMsg.Text);
-                        //}
-                        else if (vkMsg.DocumentLink != null)
-                        {
-                            await BotClient.SendChatActionAsync(message.Chat, ChatAction.UploadDocument, cancellationToken);
-                            await BotClient.SendDocumentAsync(message.Chat, new InputOnlineFile(vkMsg.DocumentLink), null, vkMsg.Text);
-                        }
-                        else
-                        {
-                            await BotClient.SendChatActionAsync(message.Chat, ChatAction.Typing, cancellationToken);
-                            await BotClient.SendTextMessageAsync(message.Chat, vkMsg.Text);
-                        }
+                        await TelegramBotClient.SendChatActionAsync(message.Chat, ChatAction.UploadPhoto, cancellationToken);
+                        await TelegramBotClient.SendPhotoAsync(message.Chat, new InputOnlineFile(vkMsg.PhotoLink), vkMsg.Text);
                     }
-
-                } else
-                {
-                    await BotClient.SendTextMessageAsync(message.Chat, "No conversation selected");
+                    else if (vkMsg.AudioMessageLink != null)
+                    {
+                        await TelegramBotClient.SendChatActionAsync(message.Chat, ChatAction.RecordVoice, cancellationToken);
+                        await TelegramBotClient.SendAudioAsync(message.Chat, new InputOnlineFile(vkMsg.AudioMessageLink), vkMsg.Text);
+                    }
+                    //else if (vkMsg.VideoLink != null)
+                    //{
+                    //    await BotClient.SendChatActionAsync(message.Chat, ChatAction.RecordVideo, cancellationToken);
+                    //    await BotClient.SendVideoAsync(message.Chat, new InputOnlineFile(vkMsg.VideoLink), null, null, null, vkMsg.Text);
+                    //}
+                    else if (vkMsg.DocumentLink != null)
+                    {
+                        await TelegramBotClient.SendChatActionAsync(message.Chat, ChatAction.UploadDocument, cancellationToken);
+                        await TelegramBotClient.SendDocumentAsync(message.Chat, new InputOnlineFile(vkMsg.DocumentLink), null, vkMsg.Text);
+                    }
+                    else
+                    {
+                        await TelegramBotClient.SendChatActionAsync(message.Chat, ChatAction.Typing, cancellationToken);
+                        await TelegramBotClient.SendTextMessageAsync(message.Chat, vkMsg.Text);
+                    }
                 }
+
+            }
+            else
+            {
+                await TelegramBotClient.SendTextMessageAsync(message.Chat, "No conversation selected");
             }
         }
     }
