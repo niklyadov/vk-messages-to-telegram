@@ -3,7 +3,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +17,8 @@ namespace VkToTg
     {
         private readonly ILogger<MainWorker> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly TelegramBotConfiguration _configuration;
+        private readonly TelegramBotConfiguration _botConfiguration;
+        private readonly VkAccountConfiguration _accountConfiguration;
         private readonly ITelegramBotClient _bot;
 
 
@@ -28,11 +28,12 @@ namespace VkToTg
         {
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
-            _configuration = configurationOptions.Value.TelegramBot;
+            _botConfiguration = configurationOptions.Value.TelegramBot;
+            _accountConfiguration = configurationOptions.Value.VkAccount;
 
             try
             {
-                _bot = new TelegramBotClient(_configuration.BotToken);
+                _bot = new TelegramBotClient(_botConfiguration.BotToken);
             } catch (Exception ex)
             {
                 _logger.LogError($"Failed to create bot. {ex.Message}");
@@ -41,9 +42,38 @@ namespace VkToTg
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+
+            await RunBot(stoppingToken);
+
+            _ = Task.Run(() => NewMessagesMonitoring(stoppingToken), stoppingToken);
+        }
+
+        protected async Task NewMessagesMonitoring(CancellationToken stoppingToken)
+        {
             using var scope = _serviceScopeFactory.CreateScope();
 
-            if(_bot == null)
+            var conversationsService = scope.ServiceProvider.GetRequiredService<Services.Vk.ConversationReceiver>();
+            long lastUnreadedCount = 0;
+
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                long unreadedCount = conversationsService.GetUnreadedMessagesCount();
+                if (unreadedCount != 0 && unreadedCount > lastUnreadedCount)
+                {
+                    await _bot.SendTextMessageAsync(_botConfiguration.AllowedChatId, $"You have {unreadedCount} unreaded messages (+ {unreadedCount - lastUnreadedCount})");
+                }
+                lastUnreadedCount = unreadedCount;
+
+                await Task.Delay(_accountConfiguration.NewMessagesMonitoringInterval);
+            }
+
+        }
+
+        protected async Task RunBot(CancellationToken stoppingToken)
+        {
+            using var scope = _serviceScopeFactory.CreateScope();
+
+            if (_bot == null)
             {
                 return;
             }

@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Telegram.Bot;
+using VkToTg.Commands;
 using VkToTg.Commands.Core;
 
 namespace VkToTg.Services.Telegram
@@ -19,30 +21,26 @@ namespace VkToTg.Services.Telegram
             _logger = logger;
         }
 
-        public BaseCommand GetCommandByName(string commandName)
+        public Type FindCommandType(string commandName)
         {
-            BaseCommand command = null;
+            Type commandType = null;
 
             try
             {
-                var commandType = Assembly.GetExecutingAssembly().GetTypes()
+                commandType = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(t => t.IsDefined(typeof(Attributes.CommandAttribute)))
                 .First(t => t.GetCustomAttributes<Attributes.CommandAttribute>()
                                 .Count(a => a.Name == commandName) > 0);
-
-                command = Activator.CreateInstance(commandType, _serviceScopeFactory) as BaseCommand;
             }
-            catch (Exception ex) when (command == null)
+            catch (Exception ex) when (commandType == null)
             {
-                command = new Commands.DefaultCommand(_serviceScopeFactory);
-
                 if (ex != null)
                 {
                     _logger.LogError($"Failed to find command {ex.Message}.");
                 }
             }
 
-            return command;
+            return commandType;
         }
 
         public ICollection<Attributes.CommandAttribute> GetAllCommandsAttribute()
@@ -51,6 +49,15 @@ namespace VkToTg.Services.Telegram
                 .Where(t => t.IsDefined(typeof(Attributes.CommandAttribute)))
                 .Select(t => t.GetCustomAttributes<Attributes.CommandAttribute>().FirstOrDefault())
                 .ToList();
+        }
+
+        public BaseCommand GetCommandImplementation(string commandText, ITelegramBotClient botClient)
+        {
+            var commandType = FindCommandType(commandText);
+            var command = commandType != null ? Activator.CreateInstance(commandType, _serviceScopeFactory, botClient) as BaseCommand
+                : new DefaultCommand(_serviceScopeFactory, botClient);
+
+            return command;
         }
     }
 }

@@ -11,11 +11,11 @@ namespace VkToTg.Commands
     [Command("unreadconv", "View all conversations with unreaded messages.")]
     public class UnreadConversations : BaseCommand
     {
-        public UnreadConversations(IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)
+        public UnreadConversations(IServiceScopeFactory serviceScopeFactory, ITelegramBotClient botClient) : base(serviceScopeFactory, botClient)
         {
         }
 
-        public override async Task Execute(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+        public override async Task OnMessage(Message message, CancellationToken cancellationToken)
         {
             using var scope = ServiceScopeFactory.CreateScope();
 
@@ -25,7 +25,7 @@ namespace VkToTg.Commands
             var vkConversations = scope.ServiceProvider.GetService<Services.Vk.ConversationReceiver>();
             var msg = string.Join("\n", vkConversations.GetUnreadedConversations());
 
-            await botClient.SendTextMessageAsync(message.Chat, msg);
+            await BotClient.SendTextMessageAsync(message.Chat, msg);
         }
     }
 }

@@ -11,11 +11,11 @@ namespace VkToTg.Commands
     [Command()]
     public class DefaultCommand : BaseCommand
     {
-        public DefaultCommand (IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)
+        public DefaultCommand (IServiceScopeFactory serviceScopeFactory, ITelegramBotClient botClient) : base(serviceScopeFactory, botClient)
         {
         } 
 
-        public override async Task Execute(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+        public override async Task OnMessage(Message message, CancellationToken cancellationToken)
         {
             if (long.TryParse(message.Text.Substring(1), out long conversationId))
             {
@@ -28,13 +28,13 @@ namespace VkToTg.Commands
                     vkMessages.SelectedConversationId = conversationId;
 
 
-                    await botClient.SendTextMessageAsync(message.Chat, $"Selected chat {conversationId}");
+                    await BotClient.SendTextMessageAsync(message.Chat, $"Selected chat {conversationId}");
                     return;
                 }
 
             }
 
-            await botClient.SendTextMessageAsync(message.Chat, "Unknown command. Please, try again!");
+            await BotClient.SendTextMessageAsync(message.Chat, "Unknown command. Please, try again!");
 
         }
     }

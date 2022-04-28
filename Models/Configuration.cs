@@ -20,5 +20,6 @@
         public string Password { get; set; } = "";
         public string AccessToken { get; set; } = "";
         public int RequestsPerSecond { get; set; } = 1;
+        public int NewMessagesMonitoringInterval { get; set; } = 6000;
     }
 }

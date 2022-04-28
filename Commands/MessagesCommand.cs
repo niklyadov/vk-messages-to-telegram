@@ -11,11 +11,11 @@ namespace VkToTg.Commands
     [Command("msg", "View all messages in selected conversation.")]
     public class MessagesCommand : BaseCommand
     {
-        public MessagesCommand(IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)
+        public MessagesCommand(IServiceScopeFactory serviceScopeFactory, ITelegramBotClient botClient) : base(serviceScopeFactory, botClient)
         {
         }
 
-        public override async Task Execute(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+        public override async Task OnMessage(Message message, CancellationToken cancellationToken)
         {
             using (var scope = ServiceScopeFactory.CreateScope())
             {
@@ -28,13 +28,13 @@ namespace VkToTg.Commands
                 {
                     await foreach (var vkMsg in vkMessages.GetMessagesAsync(vkMessages.SelectedConversationId.Value))
                     {
-                        await botClient.SendTextMessageAsync(message.Chat, vkMsg);
+                        await BotClient.SendTextMessageAsync(message.Chat, vkMsg);
                     }
 
                     return;
                 }
 
-                await botClient.SendTextMessageAsync(message.Chat, "No conversation selected");
+                await BotClient.SendTextMessageAsync(message.Chat, "No conversation selected");
             }
         }
     }

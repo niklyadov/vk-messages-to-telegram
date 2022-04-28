@@ -11,14 +11,21 @@ namespace VkToTg.Services.Vk
 {
     public class ConversationReceiver : ApiService
     {
+        private int _countPerPage = 7;
+
         public ConversationReceiver(IOptions<Configuration> configurationOptions, ILoggerFactory loggerFactory)
             : base(configurationOptions, loggerFactory)
         {
         }
 
-        public ICollection<string> GetAllConversations ()
+        Dictionary<long, string> CacheConversationsTitles = new Dictionary<long, string>();
+        public ICollection<string> GetAllConversations(int page = 1)
         {
-            var conversations = VkApi.Messages.GetConversations(new GetConversationsParams()).Items;
+            var conversations = VkApi.Messages.GetConversations(new GetConversationsParams() 
+            {
+                Count = (ulong?)_countPerPage,
+                Offset = (ulong?)(_countPerPage * (page-1)),
+            }).Items;
 
             return conversations.Select(x => FormatConversation(x) ).ToList();
         }
@@ -44,19 +51,40 @@ namespace VkToTg.Services.Vk
 
         private string GetConversationTitle(ConversationAndLastMessage convAndLM)
         {
-            if(convAndLM.Conversation.ChatSettings != null)
+            var peerId = convAndLM.Conversation.Peer.Id;
+
+            if (CacheConversationsTitles.ContainsKey(peerId))
             {
-                return convAndLM.Conversation.ChatSettings.Title;
+                return CacheConversationsTitles[peerId];
             }
 
-            if(convAndLM.LastMessage.FromId.HasValue)
+            string title = "UNKNOWN";
+
+
+            if(convAndLM.Conversation.ChatSettings != null)
             {
-                return VkApi.Users.Get(new List<long>() { convAndLM.Conversation.Peer.Id })
+                title = convAndLM.Conversation.ChatSettings.Title;
+            } else if(convAndLM.LastMessage.FromId.HasValue)
+            {
+                title = VkApi.Users.Get(new List<long>() { convAndLM.Conversation.Peer.Id })
                     .Select(x => $"{x.FirstName} {x.LastName}").First();
             }
 
-            return "UNKNOWN";
+
+            CacheConversationsTitles.Add(peerId, title);
+
+            return title;
+
         }
 
+        public long GetUnreadedMessagesCount()
+        {
+            var conversations = VkApi.Messages.GetConversations(new GetConversationsParams()
+            {
+                Filter = GetConversationFilter.Unread
+            }).Items;
+
+            return (int)conversations.Sum(x => x.Conversation.UnreadCount);
+        }
     }
 }
