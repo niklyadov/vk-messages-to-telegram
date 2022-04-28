@@ -31,7 +31,6 @@ namespace VkToTg.Commands
                     await BotClient.SendTextMessageAsync(message.Chat, $"Selected chat {conversationId}");
                     return;
                 }
-
             }
 
             await BotClient.SendTextMessageAsync(message.Chat, "Unknown command. Please, try again!");

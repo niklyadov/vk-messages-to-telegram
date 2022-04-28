@@ -24,6 +24,7 @@ namespace VkToTg
                     services.AddSingleton<Services.Telegram.ErrorsReceiver>();
                     services.AddSingleton<Services.Vk.ConversationReceiver>();
                     services.AddSingleton<Services.Vk.MessagesReceiver>();
+                    services.AddSingleton<Services.Vk.MessagesSender>();
                     services.AddHostedService<MainWorker>();
                 });
     }

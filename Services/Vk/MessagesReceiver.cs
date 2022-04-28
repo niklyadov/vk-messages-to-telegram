@@ -31,7 +31,7 @@ namespace VkToTg.Services.Vk
                     {
                         var photoAttachment = attachment.Instance as Photo;
 
-                        if(photoAttachment.Sizes != null && photoAttachment.Sizes.Count > 0)
+                        if (photoAttachment.Sizes != null && photoAttachment.Sizes.Count > 0)
                         {
                             messageModel.PhotoLink = photoAttachment.Sizes.Last().Url;
                         }

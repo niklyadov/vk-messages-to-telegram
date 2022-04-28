@@ -45,20 +45,31 @@ namespace VkToTg.Services.Telegram
         {
             var commandName = BaseCommand.ExtractCommandName(message.Text);
 
-            if (commandName == null) return;
-
-            var command = _commandsManager.GetCommandImplementation(commandName, botClient);
-
-            try
+            if (!string.IsNullOrEmpty(commandName))
             {
-                await command.OnMessage(message, cancellationToken);
+                var command = _commandsManager.GetCommandImplementation(commandName, botClient);
+
+                try
+                {
+                    await command.OnMessage(message, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Failed to execute command {ex.Message}");
+
+                    await botClient.SendTextMessageAsync(message.Chat, "Something went wrong. See console.");
+                }
+
+                return;
             }
-            catch (Exception ex)
+
+            var scope = _serviceScopeFactory.CreateScope();
+            var messagesSender = scope.ServiceProvider.GetService<Vk.MessagesSender>();
+            var messagesReceiver = scope.ServiceProvider.GetService<Vk.MessagesReceiver>();
+
+            if (messagesReceiver.SelectedConversationId.HasValue)
             {
-
-                _logger.LogError($"Failed to execute command {ex.Message}");
-
-                await botClient.SendTextMessageAsync(message.Chat, "Something went wrong. See console.");
+                messagesSender.SendMessage(message.Text, messagesReceiver.SelectedConversationId.Value);
             }
         }
 
