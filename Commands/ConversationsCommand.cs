@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using VkToTg.Attributes;
 using VkToTg.Commands.Core;
@@ -23,6 +24,8 @@ namespace VkToTg.Commands
 
             var accessMngr = scope.ServiceProvider.GetService<Services.Telegram.AccessManager>();
             if (!accessMngr.HasAccess(message.Chat.Id)) return;
+
+            await BotClient.SendChatActionAsync(message.Chat, ChatAction.Typing, cancellationToken);
 
             var currentPage = 1;
 

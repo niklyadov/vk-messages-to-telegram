@@ -3,6 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 using VkToTg.Attributes;
 using VkToTg.Commands.Core;
 
@@ -28,13 +30,37 @@ namespace VkToTg.Commands
                 {
                     await foreach (var vkMsg in vkMessages.GetMessagesAsync(vkMessages.SelectedConversationId.Value))
                     {
-                        await BotClient.SendTextMessageAsync(message.Chat, vkMsg);
+                        if(vkMsg.PhotoLink != null)
+                        {
+                            await BotClient.SendChatActionAsync(message.Chat, ChatAction.UploadPhoto, cancellationToken);
+                            await BotClient.SendPhotoAsync(message.Chat, new InputOnlineFile(vkMsg.PhotoLink), vkMsg.Text);
+                        }
+                        else if (vkMsg.AudioMessageLink != null)
+                        {
+                            await BotClient.SendChatActionAsync(message.Chat, ChatAction.RecordVoice, cancellationToken);
+                            await BotClient.SendAudioAsync(message.Chat, new InputOnlineFile(vkMsg.AudioMessageLink), vkMsg.Text);
+                        }
+                        //else if (vkMsg.VideoLink != null)
+                        //{
+                        //    await BotClient.SendChatActionAsync(message.Chat, ChatAction.RecordVideo, cancellationToken);
+                        //    await BotClient.SendVideoAsync(message.Chat, new InputOnlineFile(vkMsg.VideoLink), null, null, null, vkMsg.Text);
+                        //}
+                        else if (vkMsg.DocumentLink != null)
+                        {
+                            await BotClient.SendChatActionAsync(message.Chat, ChatAction.UploadDocument, cancellationToken);
+                            await BotClient.SendDocumentAsync(message.Chat, new InputOnlineFile(vkMsg.DocumentLink), null, vkMsg.Text);
+                        }
+                        else
+                        {
+                            await BotClient.SendChatActionAsync(message.Chat, ChatAction.Typing, cancellationToken);
+                            await BotClient.SendTextMessageAsync(message.Chat, vkMsg.Text);
+                        }
                     }
 
-                    return;
+                } else
+                {
+                    await BotClient.SendTextMessageAsync(message.Chat, "No conversation selected");
                 }
-
-                await BotClient.SendTextMessageAsync(message.Chat, "No conversation selected");
             }
         }
     }

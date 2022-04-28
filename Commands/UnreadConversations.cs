@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using VkToTg.Attributes;
 using VkToTg.Commands.Core;
 
@@ -21,6 +22,9 @@ namespace VkToTg.Commands
 
             var accessManager = scope.ServiceProvider.GetService<Services.Telegram.AccessManager>();
             if (!accessManager.HasAccess(message.Chat.Id)) return;
+
+
+            await BotClient.SendChatActionAsync(message.Chat, ChatAction.Typing, cancellationToken);
 
             var vkConversations = scope.ServiceProvider.GetService<Services.Vk.ConversationReceiver>();
             var msg = string.Join("\n", vkConversations.GetUnreadedConversations());
