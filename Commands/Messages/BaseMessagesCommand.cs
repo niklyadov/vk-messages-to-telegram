@@ -35,26 +35,28 @@ namespace VkToTg.Commands.Messages
                             await TelegramBotClient.SendPhotoAsync(BotConfiguration.AllowedChatId, new InputOnlineFile(vkMsg.PhotosLinks.First()), vkMsg.Text);
                         } else
                         {
+                            await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.Text);
                             await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId, 
                                 GetInputMediasFromUris(vkMsg.PhotosLinks).Select(input => new InputMediaPhoto(input)));
-                            await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.Text);
                         }
                     }
                     else if (vkMsg.DocumentsLinks.Count != 0)
                     {
                         await TelegramBotClient.SendChatActionAsync(BotConfiguration.AllowedChatId, ChatAction.UploadDocument, cancellationToken);
 
-                        if (vkMsg.DocumentsLinks.Count == 1)
-                        {
-                            await TelegramBotClient.SendPhotoAsync(BotConfiguration.AllowedChatId,
-                                new InputOnlineFile(vkMsg.PhotosLinks.First()), vkMsg.Text);
-                        }
-                        else
-                        {
+                        //if (vkMsg.DocumentsLinks.Count == 1)
+                        //{
+                        //   await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId,
+                        //           GetInputMediasFromUris(vkMsg.DocumentsLinks).Select(input => new InputMediaDocument(input)));
+                        //   await TelegramBotClient.SendDocumentAsync(BotConfiguration.AllowedChatId,
+                        //           new InputOnlineFile(vkMsg.DocumentsLinks.First()), vkMsg.Text);
+                        //}
+                        //else
+                        //{
+                            await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.Text);
                             await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId,
                                 GetInputMediasFromUris(vkMsg.DocumentsLinks).Select(input => new InputMediaDocument(input)));
-                            await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.Text);
-                        }
+                        //}
                     }
                     else if (vkMsg.AudioMessageLink != null)
                     {
@@ -68,7 +70,7 @@ namespace VkToTg.Commands.Messages
                     }
                 } catch (Exception ex)
                 {
-                    Logger.LogError(ex.Message);
+                    Logger.LogError(ex.ToString());
                 }
             }
         }

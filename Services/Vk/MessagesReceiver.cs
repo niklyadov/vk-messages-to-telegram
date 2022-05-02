@@ -1,20 +1,24 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using VkNet.Model;
 using VkNet.Model.Attachments;
+using VkToTg.Extensions;
 using VkToTg.Models;
 
 namespace VkToTg.Services.Vk
 {
     public class MessagesReceiver : ApiService
     {
+        private readonly VkCacheService _cache;
         public long? SelectedConversationId { get; set; }
-        public MessagesReceiver(IOptions<Configuration> configurationOptions, ILoggerFactory loggerFactory)
+        public MessagesReceiver(IOptions<Configuration> configurationOptions, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
             : base(configurationOptions, loggerFactory)
         {
+            _cache = serviceProvider.GetRequiredService<VkCacheService>();
         }
 
         public async IAsyncEnumerable<MessageModel> GetMessagesAsync(long conversationId)
@@ -61,7 +65,7 @@ namespace VkToTg.Services.Vk
         {
             var messageModel = new MessageModel()
             {
-                Text = $"{GetTitle(message)}\n {GetText(message)}"
+                Text = $"{GetMessageTitle(message)}\n {GetMessageText(message)}"
             };
 
             if (message.Attachments != null)
@@ -105,32 +109,38 @@ namespace VkToTg.Services.Vk
             return messageModel;
         }
 
-        private string GetTitle(Message message)
+        private string GetMessageTitle(Message message)
         {
             if (!message.FromId.HasValue)
             {
                 return "UNKNOWN";
             }
 
-            var user = VkApi.Users.Get(new List<long>() { message.FromId.Value }).First();
-
-            var date = string.Empty;
-            if(message.Date.HasValue)
+            var senderUserId = message.FromId.Value;
+            var senderUserName = string.Empty;
+            if(_cache.CacheUserNames.ContainsKey(senderUserId))
             {
-                var messageDate = message.Date.Value.ToLocalTime();
+                senderUserName = _cache.CacheUserNames[senderUserId];
+            } else
+            {
+                senderUserName = VkApi.Users.Get(new List<long>() { senderUserId })
+                    .Select(user => $"{user.FirstName} {user.LastName}")
+                    .First();
 
-                date = $"{messageDate.ToShortTimeString()}";
-                if(messageDate.DayOfYear != DateTime.Now.DayOfYear)
-                {
-                    date = $"{date} {messageDate.ToShortDateString()}";
-                }
+                _cache.CacheUserNames.Add(senderUserId, senderUserName);
             }
 
-            return $"{user.FirstName} {user.LastName} (/{message.FromId}) [{date}]";
+            var messageTitle = $"{senderUserName} (/{message.FromId})";
 
+            if(message.Date.HasValue)
+            {
+                messageTitle = $"[{message.Date.Value.ToShortDateTimeString()}] {messageTitle}";
+            }
+
+            return messageTitle;
         }
 
-        private string GetText(Message message)
+        private string GetMessageText(Message message)
         {
             var text = message.Text;
 
@@ -138,13 +148,13 @@ namespace VkToTg.Services.Vk
             {
                 foreach (var forwardedMessage in message.ForwardedMessages)
                 {
-                    text += $"\n🔄{GetTitle(forwardedMessage)}: \n{GetText(forwardedMessage)}";
+                    text += $"\n🔄{GetMessageTitle(forwardedMessage)}: \n{GetMessageText(forwardedMessage)}";
                 }
             }
 
             if (message.ReplyMessage != null)
             {
-                text += $"\n↩️{GetTitle(message.ReplyMessage)}: \n{GetText(message.ReplyMessage)}";
+                text += $"\n↩️{GetMessageTitle(message.ReplyMessage)}: \n{GetMessageText(message.ReplyMessage)}";
             }
 
             if (message.Attachments != null)

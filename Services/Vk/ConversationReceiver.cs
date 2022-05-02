@@ -6,19 +6,23 @@ using VkNet.Model;
 using VkNet.Model.RequestParams;
 using VkNet.Enums.SafetyEnums;
 using VkToTg.Models;
+using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace VkToTg.Services.Vk
 {
     public class ConversationReceiver : ApiService
     {
         private int _countPerPage = 7;
+        private readonly VkCacheService _cache;
+        private readonly ILogger _logger;
 
-        public ConversationReceiver(IOptions<Configuration> configurationOptions, ILoggerFactory loggerFactory)
+        public ConversationReceiver(IOptions<Configuration> configurationOptions, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
             : base(configurationOptions, loggerFactory)
         {
+            _cache = serviceProvider.GetRequiredService<VkCacheService>();
+            _logger = loggerFactory.CreateLogger<ConversationReceiver>();
         }
-
-        Dictionary<long, string> CacheConversationsTitles = new Dictionary<long, string>();
 
         public ICollection<string> GetAllConversations(int page = 1)
         {
@@ -56,28 +60,32 @@ namespace VkToTg.Services.Vk
         {
             var peerId = convAndLM.Conversation.Peer.Id;
 
-            if (CacheConversationsTitles.ContainsKey(peerId))
+            if (convAndLM.Conversation.ChatSettings != null)
             {
-                return CacheConversationsTitles[peerId];
+                return convAndLM.Conversation.ChatSettings.Title;
             }
 
-            string title = "UNKNOWN";
-
-
-            if(convAndLM.Conversation.ChatSettings != null)
+            if (_cache.CacheUserNames.ContainsKey(peerId))
             {
-                title = convAndLM.Conversation.ChatSettings.Title;
-            } else if(convAndLM.LastMessage.FromId.HasValue)
+                return _cache.CacheUserNames[peerId];
+            }
+            
+            try
             {
-                title = VkApi.Users.Get(new List<long>() { convAndLM.Conversation.Peer.Id })
-                    .Select(x => $"{x.FirstName} {x.LastName}").First();
+                var userName = VkApi.Users.Get(new List<long>() { peerId })
+                    .Select(user => $"{user.FirstName} {user.LastName}")
+                    .First();
+
+                _cache.CacheUserNames.Add(peerId, userName);
+
+                return userName;
+
+            } catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
             }
 
-
-            CacheConversationsTitles.Add(peerId, title);
-
-            return title;
-
+            return "UNKNOWN";
         }
 
         public long GetUnreadedMessagesCount()

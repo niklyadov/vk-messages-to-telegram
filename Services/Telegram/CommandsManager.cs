@@ -28,14 +28,17 @@ namespace VkToTg.Services.Telegram
             {
                 commandType = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(t => t.IsDefined(typeof(Attributes.CommandAttribute)))
-                .First(t => t.GetCustomAttributes<Attributes.CommandAttribute>()
-                                .Count(a => a.Name == commandName) > 0);
+                .FirstOrDefault(t =>
+                {
+                    var attribute = t.GetCustomAttribute<Attributes.CommandAttribute>();
+                    return attribute != null && attribute.Name == commandName;
+                });
             }
             catch (Exception ex) when (commandType == null)
             {
                 if (ex != null)
                 {
-                    _logger.LogError($"Failed to find command {ex.Message}.");
+                    _logger.LogError($"Failed to find command {ex.ToString()}.");
                 }
             }
 

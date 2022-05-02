@@ -44,7 +44,7 @@ namespace VkToTg.Services.Telegram
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Failed to execute command {ex.Message}");
+                _logger.LogError($"Failed to execute command {ex.ToString()}");
 
                 await botClient.SendTextMessageAsync(_configurationBot.AllowedChatId, "Something went wrong. See console.");
             }
