@@ -4,8 +4,8 @@
     {
         public TelegramBotConfiguration TelegramBot { get; set; }
             = new TelegramBotConfiguration();
-        public VkAccountConfiguration VkAccount { get; set; }
-            = new VkAccountConfiguration();
+        public VkConfiguration Vk { get; set; }
+            = new VkConfiguration();
     }
 
     public class TelegramBotConfiguration
@@ -15,12 +15,25 @@
         public bool AllowSendMessages { get; set; } = true;
     }
 
+    public class VkConfiguration
+    {
+        public VkAccountConfiguration Account { get; set; }
+        public VkMessagesMonitoringConfiguration MessagesMonitoring { get; set; }
+            = new VkMessagesMonitoringConfiguration();
+
+        public int RequestsPerSecond { get; set; } = 1;
+    }
+
+    public class VkMessagesMonitoringConfiguration
+    {
+        public bool IsEnabled { get; set; } = true;
+        public int IntervalInMinutes { get; set; } = 1;
+    }
+
     public class VkAccountConfiguration
     {
         public string Login { get; set; } = "";
         public string Password { get; set; } = "";
         public string AccessToken { get; set; } = "";
-        public int RequestsPerSecond { get; set; } = 1;
-        public int NewMessagesMonitoringIntervalInMinutes { get; set; } = 6000;
     }
 }

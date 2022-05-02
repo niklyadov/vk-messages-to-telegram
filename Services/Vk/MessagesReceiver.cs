@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using VkNet.Model;
@@ -16,49 +17,87 @@ namespace VkToTg.Services.Vk
         {
         }
 
-        public MessageModel GetMessageModel(Message message)
+        public async IAsyncEnumerable<MessageModel> GetMessagesAsync(long conversationId)
+        {
+            var messagesHistory = await VkApi.Messages.GetHistoryAsync(
+                new VkNet.Model.RequestParams.MessagesGetHistoryParams 
+                { 
+                    PeerId = conversationId,
+                    Count = 7
+                });
+
+            foreach (var message in messagesHistory.Messages.Reverse())
+            {
+                yield return GetMessageModel(message);
+            }
+        }
+
+        public async IAsyncEnumerable<MessageModel> GetUnreadMessagesAsync(long conversationId)
+        {
+            var conversation = (await VkApi.Messages.GetConversationsByIdAsync(new List<long> 
+            { 
+                conversationId 
+            })).Items.FirstOrDefault();
+
+            if(conversation != null && conversation.InRead != conversation.LastMessageId)
+            {
+                var messagesHistory = await VkApi.Messages.GetHistoryAsync(
+                    new VkNet.Model.RequestParams.MessagesGetHistoryParams
+                    {
+                        PeerId = conversationId,
+                        StartMessageId = conversation.InRead,
+                        Offset = -25,
+                        Count = 25
+                    });
+
+                foreach (var message in messagesHistory.Messages.Reverse())
+                {
+                    yield return GetMessageModel(message);
+                }
+            }
+        }
+
+        private MessageModel GetMessageModel(Message message)
         {
             var messageModel = new MessageModel()
             {
                 Text = $"{GetTitle(message)}\n {GetText(message)}"
             };
 
-            if(message.Attachments != null)
+            if (message.Attachments != null)
             {
                 foreach (var attachment in message.Attachments)
                 {
                     if (attachment.Type == typeof(Photo))
                     {
                         var photoAttachment = attachment.Instance as Photo;
-
+ 
                         if (photoAttachment.Sizes != null && photoAttachment.Sizes.Count > 0)
                         {
-                            messageModel.PhotoLink = photoAttachment.Sizes.Last().Url;
+                            messageModel.PhotosLinks.Add(photoAttachment.Sizes.Last().Url);
                         }
                     }
-                    //else if (attachment.Type == typeof(Sticker))
-                    //{
-                    //    var sticker = attachment.Instance as Sticker;
+                    else if (attachment.Type == typeof(Sticker))
+                    {
+                        var sticker = attachment.Instance as Sticker;
 
-                    //    messageModel.PhotoLink = sticker.;
-                    //}
+                        if (sticker.Images != null && sticker.Images.Count() > 0)
+                        {
+                            messageModel.PhotosLinks.Add(sticker.Images.First().Url);
+                            messageModel.Text += "🏞 Sticker";
+                        }
+                    }
                     else if (attachment.Type == typeof(AudioMessage))
                     {
                         var audioMessage = attachment.Instance as AudioMessage;
 
                         messageModel.AudioMessageLink = audioMessage.LinkMp3;
                     }
-                    //else if (attachment.Type == typeof(Video))
-                    //{
-                    //    var video = attachment.Instance as Video;
-
-                    //    messageModel.VideoLink = video.UploadUrl;
-                    //}
                     else if (attachment.Type == typeof(Document))
                     {
                         var document = attachment.Instance as Document;
 
-                        messageModel.DocumentLink = new System.Uri(document.Uri);
+                        messageModel.DocumentsLinks.Add(new System.Uri(document.Uri));
                     }
                 }
             }
@@ -66,7 +105,7 @@ namespace VkToTg.Services.Vk
             return messageModel;
         }
 
-        public string GetTitle(Message message)
+        private string GetTitle(Message message)
         {
             if (!message.FromId.HasValue)
             {
@@ -75,11 +114,23 @@ namespace VkToTg.Services.Vk
 
             var user = VkApi.Users.Get(new List<long>() { message.FromId.Value }).First();
 
-            return $"{user.FirstName} {user.LastName} (/{message.FromId})";
+            var date = string.Empty;
+            if(message.Date.HasValue)
+            {
+                var messageDate = message.Date.Value.ToLocalTime();
+
+                date = $"{messageDate.ToShortTimeString()}";
+                if(messageDate.DayOfYear != DateTime.Now.DayOfYear)
+                {
+                    date = $"{date} {messageDate.ToShortDateString()}";
+                }
+            }
+
+            return $"{user.FirstName} {user.LastName} (/{message.FromId}) [{date}]";
 
         }
 
-        public string GetText(Message message)
+        private string GetText(Message message)
         {
             var text = message.Text;
 
@@ -87,13 +138,13 @@ namespace VkToTg.Services.Vk
             {
                 foreach (var forwardedMessage in message.ForwardedMessages)
                 {
-                    text += $"\n🔄 {GetTitle(forwardedMessage)}: \n{GetText(forwardedMessage)}";
+                    text += $"\n🔄{GetTitle(forwardedMessage)}: \n{GetText(forwardedMessage)}";
                 }
             }
 
             if (message.ReplyMessage != null)
             {
-                text += $"\n↩️ {GetTitle(message.ReplyMessage)}: \n{GetText(message.ReplyMessage)}";
+                text += $"\n↩️{GetTitle(message.ReplyMessage)}: \n{GetText(message.ReplyMessage)}";
             }
 
             if (message.Attachments != null)
@@ -116,21 +167,6 @@ namespace VkToTg.Services.Vk
             }
 
             return text;
-        }
-
-        public async IAsyncEnumerable<MessageModel> GetMessagesAsync(long conversationId)
-        {
-            var messagesHistory = await VkApi.Messages.GetHistoryAsync(
-                new VkNet.Model.RequestParams.MessagesGetHistoryParams 
-                { 
-                    PeerId = conversationId,
-                    Count = 25
-                });
-
-            foreach (var message in messagesHistory.Messages.Reverse())
-            {
-                yield return GetMessageModel(message);
-            }
         }
     }
 }

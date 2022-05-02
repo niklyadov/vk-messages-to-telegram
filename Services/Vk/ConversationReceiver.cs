@@ -31,10 +31,12 @@ namespace VkToTg.Services.Vk
             return conversations.Select(x => FormatConversation(x) ).ToList();
         }
 
-        public ICollection<string> GetUnreadedConversations()
+        public ICollection<string> GetUnreadedConversations(int page = 1)
         {
             var conversations = VkApi.Messages.GetConversations(new GetConversationsParams()
             {
+                Count = (ulong?)_countPerPage,
+                Offset = (ulong?)(_countPerPage * (page - 1)),
                 Filter = GetConversationFilter.Unread
             }).Items;
 

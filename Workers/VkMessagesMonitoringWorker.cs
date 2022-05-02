@@ -18,7 +18,7 @@ namespace VkToTg.Workers
         private readonly IServiceProvider _serviceProvider;
         private readonly ConversationReceiver _conversationReceiver;
         private readonly TelegramBotConfiguration _botConfiguration;
-        private readonly VkAccountConfiguration _vkConfiguration;
+        private readonly VkMessagesMonitoringConfiguration _vkMonitoringConfiguration;
 
         public VkMessagesMonitoringWorker(ILogger<VkMessagesMonitoringWorker> logger, IServiceProvider serviceProvider)
         {
@@ -29,11 +29,17 @@ namespace VkToTg.Workers
 
             var configurationOptions = serviceProvider.GetService<IOptions<Configuration>>();
             _botConfiguration = configurationOptions.Value.TelegramBot;
-            _vkConfiguration = configurationOptions.Value.VkAccount;
+            _vkMonitoringConfiguration = configurationOptions.Value.Vk.MessagesMonitoring;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            if(!_vkMonitoringConfiguration.IsEnabled || _vkMonitoringConfiguration.IntervalInMinutes == 0)
+            {
+                _logger.LogInformation("Vk Messages Monitoring is not enabled.");
+                return;
+            }
+
             _logger.LogInformation("Starting Vk Messages Monitoring worker.");
 
             long lastUnreadedCount = -1;
@@ -48,7 +54,7 @@ namespace VkToTg.Workers
                 }
                 lastUnreadedCount = unreadedCount;
 
-                await Task.Delay(_vkConfiguration.NewMessagesMonitoringIntervalInMinutes * 1000 * 60);
+                await Task.Delay(_vkMonitoringConfiguration.IntervalInMinutes * 1000 * 60);
             }
         }
     }
