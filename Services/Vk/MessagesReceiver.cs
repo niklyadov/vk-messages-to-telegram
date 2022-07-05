@@ -138,7 +138,8 @@ namespace VkToTg.Services.Vk
 
             if(message.Date.HasValue)
             {
-                messageTitle = $"[{message.Date.Value.ToShortDateTimeString()}] {messageTitle}";
+                var messageDate = message.Date.Value.ToLocalTime();
+                messageTitle = $"[{messageDate.ToShortDateTimeString()}] {messageTitle}";
             }
 
             return messageTitle;
