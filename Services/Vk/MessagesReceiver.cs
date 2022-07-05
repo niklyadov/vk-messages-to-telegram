@@ -78,7 +78,11 @@ namespace VkToTg.Services.Vk
  
                         if (photoAttachment.Sizes != null && photoAttachment.Sizes.Count > 0)
                         {
-                            messageModel.PhotosLinks.Add(photoAttachment.Sizes.Last().Url);
+                            // select biggest photo
+                            var photosPixelsUrl = photoAttachment.Sizes.Select(ps => (ps.Width * ps.Height, ps.Url)).ToList();
+                                photosPixelsUrl.Sort((x, y) => y.Item1.CompareTo(x.Item1));
+
+                            messageModel.PhotosLinks.Add(photosPixelsUrl.First().Url);
                         }
                     }
                     else if (attachment.Type == typeof(Sticker))
@@ -101,7 +105,7 @@ namespace VkToTg.Services.Vk
                     {
                         var document = attachment.Instance as Document;
 
-                        messageModel.DocumentsLinks.Add(new System.Uri(document.Uri));
+                        messageModel.DocumentsLinks.Add(new Uri(document.Uri));
                     }
                 }
             }

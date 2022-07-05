@@ -44,19 +44,9 @@ namespace VkToTg.Commands.Messages
                     {
                         await TelegramBotClient.SendChatActionAsync(BotConfiguration.AllowedChatId, ChatAction.UploadDocument, cancellationToken);
 
-                        //if (vkMsg.DocumentsLinks.Count == 1)
-                        //{
-                        //   await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId,
-                        //           GetInputMediasFromUris(vkMsg.DocumentsLinks).Select(input => new InputMediaDocument(input)));
-                        //   await TelegramBotClient.SendDocumentAsync(BotConfiguration.AllowedChatId,
-                        //           new InputOnlineFile(vkMsg.DocumentsLinks.First()), vkMsg.Text);
-                        //}
-                        //else
-                        //{
-                            await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.Text);
-                            await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId,
-                                GetInputMediasFromUris(vkMsg.DocumentsLinks).Select(input => new InputMediaDocument(input)));
-                        //}
+                        await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.Text);
+                        await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId,
+                            GetInputMediasFromUris(vkMsg.DocumentsLinks).Select(input => new InputMediaDocument(input)));
                     }
                     else if (vkMsg.AudioMessageLink != null)
                     {
