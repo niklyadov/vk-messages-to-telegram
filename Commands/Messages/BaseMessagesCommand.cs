@@ -32,10 +32,10 @@ namespace VkToTg.Commands.Messages
 
                         if(vkMsg.PhotosLinks.Count == 1)
                         {
-                            await TelegramBotClient.SendPhotoAsync(BotConfiguration.AllowedChatId, new InputOnlineFile(vkMsg.PhotosLinks.First()), vkMsg.Text);
+                            await TelegramBotClient.SendPhotoAsync(BotConfiguration.AllowedChatId, new InputOnlineFile(vkMsg.PhotosLinks.First()), vkMsg.FullText);
                         } else
                         {
-                            await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.Text);
+                            await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.FullText);
                             await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId, 
                                 GetInputMediasFromUris(vkMsg.PhotosLinks).Select(input => new InputMediaPhoto(input)));
                         }
@@ -44,19 +44,19 @@ namespace VkToTg.Commands.Messages
                     {
                         await TelegramBotClient.SendChatActionAsync(BotConfiguration.AllowedChatId, ChatAction.UploadDocument, cancellationToken);
 
-                        await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.Text);
+                        await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.FullText);
                         await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId,
                             GetInputMediasFromUris(vkMsg.DocumentsLinks).Select(input => new InputMediaDocument(input)));
                     }
                     else if (vkMsg.AudioMessageLink != null)
                     {
                         await TelegramBotClient.SendChatActionAsync(BotConfiguration.AllowedChatId, ChatAction.RecordVoice, cancellationToken);
-                        await TelegramBotClient.SendAudioAsync(BotConfiguration.AllowedChatId, new InputOnlineFile(vkMsg.AudioMessageLink), vkMsg.Text);
+                        await TelegramBotClient.SendAudioAsync(BotConfiguration.AllowedChatId, new InputOnlineFile(vkMsg.AudioMessageLink), vkMsg.FullText);
                     }
                     else
                     {
                         await TelegramBotClient.SendChatActionAsync(BotConfiguration.AllowedChatId, ChatAction.Typing, cancellationToken);
-                        await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.Text);
+                        await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.FullText);
                     }
                 } catch (Exception ex)
                 {
