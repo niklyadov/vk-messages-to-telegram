@@ -34,7 +34,7 @@ namespace VkToTg.Workers
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if(!_vkMonitoringConfiguration.IsEnabled || _vkMonitoringConfiguration.IntervalInMinutes == 0)
+            if (!_vkMonitoringConfiguration.IsEnabled || _vkMonitoringConfiguration.IntervalInMinutes == 0)
             {
                 _logger.LogInformation("Vk Messages Monitoring is not enabled.");
                 return;
@@ -46,13 +46,21 @@ namespace VkToTg.Workers
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                long unreadedCount = _conversationReceiver.GetUnreadedMessagesCount();
-                if (unreadedCount != 0 && lastUnreadedCount != -1 && unreadedCount > lastUnreadedCount)
+                try
                 {
-                    await _telegramBotClient.SendTextMessageAsync(_botConfiguration.AllowedChatId, 
-                        $"You have {unreadedCount} unreaded messages (+ {unreadedCount - lastUnreadedCount})");
+                    long unreadedCount = _conversationReceiver.GetUnreadedMessagesCount();
+                    if (unreadedCount != 0 && lastUnreadedCount != -1 && unreadedCount > lastUnreadedCount)
+                    {
+                        await _telegramBotClient.SendTextMessageAsync(_botConfiguration.AllowedChatId,
+                            $"You have {unreadedCount} unreaded messages (+ {unreadedCount - lastUnreadedCount})");
+                    }
+
+                    lastUnreadedCount = unreadedCount;
                 }
-                lastUnreadedCount = unreadedCount;
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                }
 
                 await Task.Delay(_vkMonitoringConfiguration.IntervalInMinutes * 1000 * 60);
             }
