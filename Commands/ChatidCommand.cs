@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -18,7 +17,7 @@ namespace VkToTg.Commands
 
         public override async Task OnMessage(Message message, CancellationToken cancellationToken)
         {
-            await TelegramBotClient.SendTextMessageAsync(message.Chat, $"This chat id is: <code>{message.Chat.Id}</code>", 
+            await TelegramBotClient.SendTextMessageAsync(message.Chat, $"This chat id is: <code>{message.Chat.Id}</code>",
                 Telegram.Bot.Types.Enums.ParseMode.Html);
         }
     }

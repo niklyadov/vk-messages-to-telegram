@@ -1,13 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using VkNet.Enums.SafetyEnums;
 using VkNet.Model;
 using VkNet.Model.RequestParams;
-using VkNet.Enums.SafetyEnums;
 using VkToTg.Models;
-using System;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace VkToTg.Services.Vk
 {
@@ -26,13 +26,13 @@ namespace VkToTg.Services.Vk
 
         public ICollection<string> GetAllConversations(int page = 1)
         {
-            var conversations = VkApi.Messages.GetConversations(new GetConversationsParams() 
+            var conversations = VkApi.Messages.GetConversations(new GetConversationsParams()
             {
                 Count = (ulong?)_countPerPage,
-                Offset = (ulong?)(_countPerPage * (page-1)),
+                Offset = (ulong?)(_countPerPage * (page - 1)),
             }).Items;
 
-            return conversations.Select(x => FormatConversation(x) ).ToList();
+            return conversations.Select(x => FormatConversation(x)).ToList();
         }
 
         public ICollection<string> GetUnreadedConversations(int page = 1)
@@ -69,7 +69,7 @@ namespace VkToTg.Services.Vk
             {
                 return _cache.CacheUserNames[peerId];
             }
-            
+
             try
             {
                 var userName = VkApi.Users.Get(new List<long>() { peerId })
@@ -80,7 +80,8 @@ namespace VkToTg.Services.Vk
 
                 return userName;
 
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(ex.ToString());
             }

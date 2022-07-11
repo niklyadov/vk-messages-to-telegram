@@ -22,7 +22,7 @@ namespace VkToTg.Commands.Core
         {
             ServiceProvider = serviceProvider;
             TelegramBotClient = serviceProvider.GetRequiredService<ITelegramBotClient>();
-            Logger = serviceProvider.GetRequiredService< ILogger<BaseCommand> >();
+            Logger = serviceProvider.GetRequiredService<ILogger<BaseCommand>>();
 
             var configurationOptions = serviceProvider.GetService<IOptions<Configuration>>();
             BotConfiguration = configurationOptions.Value.TelegramBot;

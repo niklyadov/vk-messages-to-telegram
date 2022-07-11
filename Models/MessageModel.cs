@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VkNet.Model;
 using VkNet.Model.Attachments;
 
 namespace VkToTg.Models
@@ -13,7 +12,7 @@ namespace VkToTg.Models
         public string FullText => GetFullText();
         public List<Uri> PhotosLinks { get; set; } = new List<Uri>();
         public List<Uri> DocumentsLinks { get; set; } = new List<Uri>();
-        public Uri AudioMessageLink { get; set; } 
+        public Uri AudioMessageLink { get; set; }
 
         private string GetFullText()
         {

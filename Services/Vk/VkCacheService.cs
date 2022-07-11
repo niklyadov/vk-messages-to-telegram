@@ -7,7 +7,7 @@ namespace VkToTg.Services.Vk
 {
     public class VkCacheService
     {
-        public Dictionary<long, string> CacheUserNames { get; } 
+        public Dictionary<long, string> CacheUserNames { get; }
             = new Dictionary<long, string>();
 
         private readonly IServiceProvider _serviceProvider;

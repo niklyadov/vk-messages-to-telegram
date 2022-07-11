@@ -17,7 +17,7 @@ namespace VkToTg.Workers
         private readonly ITelegramBotClient _telegramBotClient;
         private readonly IServiceProvider _serviceProvider;
 
-        public TelegramBotWorker (ILogger<TelegramBotWorker> logger, IServiceProvider serviceProvider)
+        public TelegramBotWorker(ILogger<TelegramBotWorker> logger, IServiceProvider serviceProvider)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;

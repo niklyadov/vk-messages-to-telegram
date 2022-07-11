@@ -19,7 +19,7 @@ namespace VkToTg.Services.Telegram
         private readonly TelegramBotConfiguration _configurationBot;
         private readonly CommandsManager _commandsManager;
 
-        public UpdatesReceiver (ILogger<UpdatesReceiver> logger, IServiceProvider serviceProvider,
+        public UpdatesReceiver(ILogger<UpdatesReceiver> logger, IServiceProvider serviceProvider,
             IOptions<Configuration> configurationOptions)
         {
             _logger = logger;

@@ -8,7 +8,7 @@ namespace VkToTg.Services.Vk
 {
     public class MessagesSender : ApiService
     {
-        public MessagesSender(IOptions<Configuration> configurationOptions, ILoggerFactory loggerFactory) 
+        public MessagesSender(IOptions<Configuration> configurationOptions, ILoggerFactory loggerFactory)
             : base(configurationOptions, loggerFactory)
         {
         }

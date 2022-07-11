@@ -1,9 +1,9 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
-using Newtonsoft.Json;
 
 namespace VkToTg.Services.Telegram
 {

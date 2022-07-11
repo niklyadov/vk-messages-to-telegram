@@ -30,13 +30,14 @@ namespace VkToTg.Commands.Messages
                     {
                         await TelegramBotClient.SendChatActionAsync(BotConfiguration.AllowedChatId, ChatAction.UploadPhoto, cancellationToken);
 
-                        if(vkMsg.PhotosLinks.Count == 1)
+                        if (vkMsg.PhotosLinks.Count == 1)
                         {
                             await TelegramBotClient.SendPhotoAsync(BotConfiguration.AllowedChatId, new InputOnlineFile(vkMsg.PhotosLinks.First()), vkMsg.FullText);
-                        } else
+                        }
+                        else
                         {
                             await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.FullText);
-                            await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId, 
+                            await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId,
                                 GetInputMediasFromUris(vkMsg.PhotosLinks).Select(input => new InputMediaPhoto(input)));
                         }
                     }
@@ -58,7 +59,8 @@ namespace VkToTg.Commands.Messages
                         await TelegramBotClient.SendChatActionAsync(BotConfiguration.AllowedChatId, ChatAction.Typing, cancellationToken);
                         await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.FullText);
                     }
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     Logger.LogError(ex.ToString());
                 }

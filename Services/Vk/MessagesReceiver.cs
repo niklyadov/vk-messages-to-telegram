@@ -74,7 +74,7 @@ namespace VkToTg.Services.Vk
                 foreach (var forwardedMessage in message.ForwardedMessages)
                 {
                     messageModel.Message += $"\n🔄{GetMessageTitle(forwardedMessage)}: \n{forwardedMessage.Text}";
-                    
+
                     messageModel.AppendAllAttachments(forwardedMessage.Attachments);
                 }
             }
@@ -83,7 +83,7 @@ namespace VkToTg.Services.Vk
             {
                 var replyMessage = message.ReplyMessage;
                 messageModel.Message += $"\n↩️{GetMessageTitle(message.ReplyMessage)}: \n{replyMessage.Text}";
-                
+
                 // attachments in reply message is neccessary or not?
                 //messageModel.AppendAllAttachments(replyMessage.Attachments);
             }

@@ -50,7 +50,7 @@ namespace VkToTg.Commands.Conversations
             var conversationsService = ServiceProvider.GetService<Services.Vk.ConversationReceiver>();
             var text = GetMessageText(conversationsService, currentPage);
 
-            if(text == null) return;
+            if (text == null) return;
 
             var inline = GetInline(currentPage);
 

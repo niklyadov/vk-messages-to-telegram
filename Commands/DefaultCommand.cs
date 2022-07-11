@@ -12,9 +12,9 @@ namespace VkToTg.Commands
     [Command()]
     public class DefaultCommand : BaseCommand
     {
-        public DefaultCommand (IServiceProvider serviceProvider) : base(serviceProvider)
+        public DefaultCommand(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-        } 
+        }
 
         public override async Task OnMessage(Message message, CancellationToken cancellationToken)
         {
