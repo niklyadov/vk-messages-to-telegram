@@ -5,7 +5,7 @@ using Telegram.Bot;
 
 namespace VkToTg
 {
-    public class Program
+    public class Program  // Hello !
     {
         public static void Main(string[] args)
         {
