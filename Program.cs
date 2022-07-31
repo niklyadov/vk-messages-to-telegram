@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 using Telegram.Bot;
 
 namespace VkToTg
@@ -22,8 +23,11 @@ namespace VkToTg
                     var appConfiguration = configuration.GetSection("AppConfiguration");
                     services.Configure<Models.Configuration>(appConfiguration);
 
-                    #region Register Telegram Bot
-                    var botTokent = appConfiguration.GetSection("TelegramBot").GetSection("Token").Value;
+                    #region Register & Configure Telegram Bot
+                    var botTokent = appConfiguration
+                                .GetSection("TelegramBot")
+                                .GetSection("Token").Value;
+
                     if (string.IsNullOrEmpty(botTokent))
                     {
                         throw new System.Exception("Please, provide the telegram bot token in appsettigns.json");
@@ -44,6 +48,9 @@ namespace VkToTg
 
                     services.AddHostedService<Workers.TelegramBotWorker>();
                     services.AddHostedService<Workers.VkMessagesMonitoringWorker>();
-                });
+                })
+            .UseSerilog((hostingContext, loggerConfiguration) =>
+                    loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration))
+            .UseWindowsService();
     }
 }
