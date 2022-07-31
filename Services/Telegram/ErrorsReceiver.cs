@@ -17,7 +17,10 @@ namespace VkToTg.Services.Telegram
 
         public async Task Handle(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
-            _logger.LogError($"{JsonConvert.SerializeObject(exception)}");
+            await Task.Run(() =>
+            {
+                _logger.LogError($"{JsonConvert.SerializeObject(exception)}");
+            });
         }
     }
 }

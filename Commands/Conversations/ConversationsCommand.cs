@@ -28,12 +28,12 @@ namespace VkToTg.Commands.Conversations
             var conversationsService = ServiceProvider.GetService<Services.Vk.ConversationReceiver>();
             var text = GetMessageText(conversationsService, currentPage);
 
-            if (text == null) return;
+            if (string.IsNullOrEmpty(text)) return;
 
             var inline = GetInline(currentPage);
 
             // Send message!
-            await TelegramBotClient.SendTextMessageAsync(message.Chat, text, null, null, null, null, null, null, inline);
+            await TelegramBotClient.SendTextMessageAsync(message.Chat, text, null, null, null, null, null, null, null, inline);
         }
 
         public override async Task OnCallbackQuery(CallbackQuery callbackQuery, CancellationToken cancellationToken)
