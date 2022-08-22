@@ -1,19 +1,19 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Serilog;
 using Telegram.Bot;
+using Serilog;
 
 namespace VkToTg
 {
-    public class Program  // Hello !
+    public class Program
     {
         public static void Main(string[] args)
         {
             CreateHostBuilder(args)
+                .UseWindowsService()
                 .UseSerilog((hostingContext, loggerConfiguration) =>
                     loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration))
-                .UseWindowsService()
                 .Build()
                 .Run();
         }
@@ -28,7 +28,7 @@ namespace VkToTg
                     var appConfiguration = configuration.GetSection("AppConfiguration");
                     services.Configure<Models.Configuration>(appConfiguration);
 
-                    #region Register & Configure Telegram Bot
+                    #region Register Telegram Bot
                     
                     var botToken = appConfiguration
                         .GetSection("TelegramBot")
