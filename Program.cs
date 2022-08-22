@@ -10,10 +10,15 @@ namespace VkToTg
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            CreateHostBuilder(args)
+                .UseSerilog((hostingContext, loggerConfiguration) =>
+                    loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration))
+                .UseWindowsService()
+                .Build()
+                .Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
@@ -24,16 +29,16 @@ namespace VkToTg
                     services.Configure<Models.Configuration>(appConfiguration);
 
                     #region Register & Configure Telegram Bot
-                    var botTokent = appConfiguration
+                    var botToken = appConfiguration
                                 .GetSection("TelegramBot")
                                 .GetSection("Token").Value;
 
-                    if (string.IsNullOrEmpty(botTokent))
+                    if (string.IsNullOrEmpty(botToken))
                     {
                         throw new System.Exception("Please, provide the telegram bot token in appsettigns.json");
                     }
 
-                    services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botTokent));
+                    services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
                     #endregion
 
                     services.AddSingleton<Services.Telegram.AccessManager>();
@@ -48,9 +53,6 @@ namespace VkToTg
 
                     services.AddHostedService<Workers.TelegramBotWorker>();
                     services.AddHostedService<Workers.VkMessagesMonitoringWorker>();
-                })
-            .UseSerilog((hostingContext, loggerConfiguration) =>
-                    loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration))
-            .UseWindowsService();
+                });
     }
 }
