@@ -352,3 +352,5 @@ MigrationBackup/
 appsettings.Development.json
 
 .idea/
+
+Hosted/
