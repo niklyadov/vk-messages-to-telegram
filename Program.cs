@@ -29,10 +29,12 @@ namespace VkToTg
                     services.Configure<Models.Configuration>(appConfiguration);
 
                     #region Register & Configure Telegram Bot
+                    
                     var botToken = appConfiguration
-                                .GetSection("TelegramBot")
-                                .GetSection("Token").Value;
-
+                        .GetSection("TelegramBot")
+                        .GetSection("Token")
+                        .Value;
+                    
                     if (string.IsNullOrEmpty(botToken))
                     {
                         throw new System.Exception("Please, provide the telegram bot token in appsettigns.json");
