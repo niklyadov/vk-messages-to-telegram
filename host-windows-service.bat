@@ -1,6 +1,6 @@
 set serviceName=VkToTg
-set hostedPath=%cd%\Hosted
-@REM set hostedPath=C:\Hosted
+@REM set hostedPath=%cd%\Hosted
+set hostedPath=C:\Hosted
 set servicePath=%hostedPath%\%serviceName%
 
 net stop %serviceName%
@@ -11,7 +11,7 @@ dotnet publish -c Release --no-self-contained --output %servicePath% %serviceNam
 sc.exe delete %serviceName%
 sc.exe create %serviceName% binPath="%servicePath%\%serviceName%.exe"
 
-@REM copy /y "%hostedPath%\%serviceName%-config.json" "%servicePath%\appsettings.json"
+copy /y "%hostedPath%\%serviceName%-config.json" "%servicePath%\appsettings.json"
 
 net start %serviceName%
 pause
