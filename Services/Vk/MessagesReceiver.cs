@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using VkNet.Enums.SafetyEnums;
 using VkNet.Model;
 using VkToTg.Extensions;
 using VkToTg.Models;
@@ -88,7 +89,62 @@ namespace VkToTg.Services.Vk
                 //messageModel.AppendAllAttachments(replyMessage.Attachments);
             }
 
+
+            if (message.Action != null)
+            {
+                messageModel.Message += GetActionText(message, message.Action);
+            }
+
             return messageModel;
+        }
+
+        public string GetActionText(Message message, MessageActionObject action)
+        {
+            if (action.Type == MessageAction.ChatCreate)
+            {
+                return $"Chat created: {action.Text}";
+            }
+            else if (action.Type == MessageAction.ChatTitleUpdate)
+            {
+                return $"Chat title updated: {action.Text}";
+            }
+            else if (action.Type == MessageAction.ChatKickUser)
+            {
+                if (message.FromId == action.MemberId)
+                {
+                    return $"Left from chat";
+                }
+
+                var username = GetUsernameByUserId(action.MemberId.Value);
+                return $"Kicked {username}";
+            }
+            else if (action.Type == MessageAction.ChatInviteUser)
+            {
+                var username = GetUsernameByUserId(action.MemberId.Value);
+                return $"Invite {username}";
+            }
+            else if (action.Type == MessageAction.ChatInviteUserByLink)
+            {
+                return $"User Invited By Link";
+            }
+            else if (action.Type == MessageAction.ChatPinMessage)
+            {
+                return $"Pin message";
+            }
+            else if (action.Type == MessageAction.ChatUnpinMessage)
+            {
+                return $"Unpin message";
+            }
+            else if (action.Type == MessageAction.ChatPhotoUpdate)
+            {
+                return $"Chat Photo Updated";
+            }
+            else if (action.Type == MessageAction.ChatPhotoRemove)
+            {
+                return $"Chat Photo Removed";
+            }
+
+            return "";
         }
 
         private string GetMessageTitle(Message message)
@@ -98,20 +154,7 @@ namespace VkToTg.Services.Vk
                 return "UNKNOWN";
             }
 
-            var senderUserId = message.FromId.Value;
-            var senderUserName = string.Empty;
-            if (_cache.CacheUserNames.ContainsKey(senderUserId))
-            {
-                senderUserName = _cache.CacheUserNames[senderUserId];
-            }
-            else
-            {
-                senderUserName = VkApi.Users.Get(new List<long>() { senderUserId })
-                    .Select(user => $"{user.FirstName} {user.LastName}")
-                    .First();
-
-                _cache.CacheUserNames.Add(senderUserId, senderUserName);
-            }
+            var senderUserName = GetUsernameByUserId(message.FromId.Value);
 
             var messageTitle = $"{senderUserName} (/{message.FromId})";
 
@@ -123,5 +166,24 @@ namespace VkToTg.Services.Vk
 
             return messageTitle;
         }
+
+        private string GetUsernameByUserId(long senderUserId)
+        {
+            _cache.CacheUserNames.TryGetValue(senderUserId, out var senderUsername);
+
+            if (string.IsNullOrEmpty(senderUsername))
+            {
+                senderUsername = VkApi.Users.Get(new List<long>() { senderUserId })
+                    .Select(user => $"{user.FirstName} {user.LastName}")
+                    .First();
+
+                _cache.CacheUserNames.Add(senderUserId, senderUsername);
+            }
+
+
+            return senderUsername;
+        }
+
+
     }
 }
