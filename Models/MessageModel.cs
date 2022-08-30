@@ -11,7 +11,7 @@ namespace VkToTg.Models
         public string Message { get; set; }
         public string FullText => GetFullText();
         public List<Uri> PhotosLinks { get; set; } = new List<Uri>();
-        public List<Uri> DocumentsLinks { get; set; } = new List<Uri>();
+        public List<DocumentModel> Documents { get; set; } = new List<DocumentModel>();
         public Uri AudioMessageLink { get; set; }
 
         private string GetFullText()
@@ -76,9 +76,13 @@ namespace VkToTg.Models
             Message += "🏞 Sticker";
         }
 
-        private void AppendDocumentAttachment(Document documentAttachment)
+        private void AppendDocumentAttachment(Document document)
         {
-            DocumentsLinks.Add(new Uri(documentAttachment.Uri));
+            Documents.Add(new DocumentModel()
+            {
+                FileName = document.Title,
+                Uri = new Uri(document.Uri)
+            });
         }
 
         private void AppendAudioMessageAttachment(AudioMessage audioMessageAttachment)

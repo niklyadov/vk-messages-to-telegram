@@ -38,16 +38,16 @@ namespace VkToTg.Commands.Messages
                         {
                             await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.FullText);
                             await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId,
-                                GetInputMediasFromUris(vkMsg.PhotosLinks).Select(input => new InputMediaPhoto(input)));
+                                GetInputMediasFromVkDocuments(vkMsg.PhotosLinks).Select(input => new InputMediaPhoto(input)));
                         }
                     }
-                    else if (vkMsg.DocumentsLinks.Count != 0)
+                    else if (vkMsg.Documents.Count != 0)
                     {
                         await TelegramBotClient.SendChatActionAsync(BotConfiguration.AllowedChatId, ChatAction.UploadDocument, cancellationToken);
 
                         await TelegramBotClient.SendTextMessageAsync(BotConfiguration.AllowedChatId, vkMsg.FullText);
                         await TelegramBotClient.SendMediaGroupAsync(BotConfiguration.AllowedChatId,
-                            GetInputMediasFromUris(vkMsg.DocumentsLinks).Select(input => new InputMediaDocument(input)));
+                            GetInputMediasFromVkDocuments(vkMsg.Documents).Select(input => new InputMediaDocument(input)));
                     }
                     else if (vkMsg.AudioMessageLink != null)
                     {
@@ -67,7 +67,7 @@ namespace VkToTg.Commands.Messages
             }
         }
 
-        private Stream GetStreamFromUrl(string url)
+        private Stream GetStreamFromUrl(Uri url)
         {
             byte[] data = null;
 
@@ -79,7 +79,10 @@ namespace VkToTg.Commands.Messages
             return new MemoryStream(data);
         }
 
-        private List<InputMedia> GetInputMediasFromUris(List<Uri> uris)
-            => uris.Select(uri => new InputMedia(GetStreamFromUrl(uri.AbsoluteUri), uri.AbsolutePath)).ToList();
+        private List<InputMedia> GetInputMediasFromVkDocuments(List<DocumentModel> documents)
+            => documents.Select(document => new InputMedia(GetStreamFromUrl(document.Uri), document.FileName)).ToList();
+
+        private List<InputMedia> GetInputMediasFromVkDocuments(List<Uri> documentUris)
+            => documentUris.Select(documentUri => new InputMedia(GetStreamFromUrl(documentUri), string.Empty)).ToList();
     }
 }
